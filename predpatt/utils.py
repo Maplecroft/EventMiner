@@ -1,5 +1,6 @@
 import pika
 import json
+from retry import retry
 
 
 class RabbitClient(object):
@@ -12,6 +13,7 @@ class RabbitClient(object):
 
         self.channel.queue_declare(queue=self.queue, durable=True)
 
+    @retry(tries=5, delay=1)
     def send(self, n, routing):
         self.channel.basic_publish(exchange='',
                                    routing_key=routing,

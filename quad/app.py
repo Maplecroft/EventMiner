@@ -3,6 +3,8 @@ import logging
 import os
 import utils
 
+from retry.api import retry_call
+
 logging.basicConfig(format='%(levelname)s %(asctime)s %(filename)s %(lineno)d: %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -34,7 +36,12 @@ def callback(ch, method, properties, body):
 
     publish(data)
 
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+    retry_call(
+        ch.basic_ack,
+        fkwargs=dict(delivery_tag=method.delivery_tag),
+        tries=5,
+        delay=1,
+    )
 
 
 def process(data, model, vocab, vocab_size, check):
