@@ -3,6 +3,7 @@ import logging
 import os
 import utils
 
+from retry import retry
 from retry.api import retry_call
 
 logging.basicConfig(format='%(levelname)s %(asctime)s %(filename)s %(lineno)d: %(message)s')
@@ -64,6 +65,7 @@ def process(data, model, vocab, vocab_size, check):
     return data
 
 
+@retry(tries=5, delay=1)
 def publish(data):
     client = utils.RabbitClient(queue=PUBLISH, host='rabbitmq')
     client.send(data, PUBLISH)
